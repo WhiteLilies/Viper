@@ -44,14 +44,13 @@ public class Snake {
 
         }
         
+        body.add(0, new Point(getHead().x + x,getHead().y + y));
+        //deleting the tail
         if (growthCounter > 0){
             growthCounter--;
         } else {
             body.remove(body.size() -1);
         }
-        
-        body.add(0, new Point(getHead().x + x,getHead().y + y));
-        //deleting the tail
         
     }
     
@@ -100,8 +99,8 @@ public class Snake {
     public void setGrowthCounter(int growthCounter) {
         this.growthCounter = growthCounter;
     }
-    public void addGrowthCounter(int growthCounter) {
-        this.growthCounter += growthCounter;
+    public void grow(int growth) {
+        this.growthCounter += growth;
     }
 
 }

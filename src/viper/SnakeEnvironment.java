@@ -5,14 +5,17 @@
 package viper;
 
 import environment.Environment;
+import environment.GraphicsPalette;
 import environment.Grid;
 import image.ResourceTools;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
  *
@@ -23,24 +26,42 @@ class SnakeEnvironment extends Environment {
     private Grid grid;
     private int score = 0;
     private Snake snake;
-    
+    private ArrayList<Point> apples;
+    private ArrayList<Point> poison;
     private int delay = 5;
     private int moveCounter = delay;
+    private Image blackout;
+    //private ArrayList<Point> goldenSnitches;
 
     public SnakeEnvironment() {
     }
 
     @Override
     public void initializeEnvironment() {
-        this.setBackground(ResourceTools.loadImageFromResource("resources/black_woodbg.jpg"));
+        this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
+        this.blackout = (ResourceTools.loadImageFromResource("resources/black_out.jpg"));
         //grid  
         this.grid = new Grid();
         this.grid.setPosition(new Point(50, 100));
-        this.grid.setColor(new Color(249, 130, 171));
+        this.grid.setColor(new Color(0, 0, 0));
         this.grid.setColumns(40);
         this.grid.setRows(20);
         this.grid.setCellHeight(20);
         this.grid.setCellWidth(20);
+
+        //   goldenSnitches = newArrayList<Point>();
+        //   godlenSnitches.add(getRandomGridLocation());
+        //apples
+        this.apples = new ArrayList<Point>();
+        for (int i = 0; i < 2; i++) {
+            this.apples.add(getRandomGridPoint());
+        }
+        //poison bottles
+        this.poison = new ArrayList<Point>();
+        for (int i = 0; i < 6; i++) {
+            this.poison.add(getRandomGridPoint());
+        }
+
         //snake
         this.snake = new Snake();
         this.snake.getBody().add(new Point(5, 5));
@@ -55,15 +76,45 @@ class SnakeEnvironment extends Environment {
         //gets called twenty times a second 
         //    System.out.println("Timer");
         //.move is a method
-        if (snake != null){
-            if (moveCounter <= 0){
+        if (snake != null) {
+            if (moveCounter <= 0) {
                 snake.move();
                 moveCounter = delay;
+                checkAppleSnakeIntersect();
+                checkPoisonSnakeIntersect();
             } else {
-                moveCounter --;
+                moveCounter--;
             }
-            
+
         }
+    }
+
+    private void checkAppleSnakeIntersect() {
+        //if snake.head is in the same grid coordinate as ANY apple, then...
+        // move apple
+        // add to score
+        // make a noise?
+        for (int i = 0; i < this.apples.size(); i++) {
+            if (this.apples.get(i).equals(this.snake.getHead())) {
+                System.out.println("CHooommmmppppp!!!!!!!!!!!!!");
+//                this.apples.get(i).x = (int) (Math.random() * this.grid.getColumns());
+                this.apples.get(i).setLocation(getRandomGridPoint());
+                this.score += 50;
+            }
+        }
+    }
+
+    private void checkPoisonSnakeIntersect() {
+        for (int i = 0; i < this.poison.size(); i++) {
+            if (this.poison.get(i).equals((this.snake.getHead()))) {
+                System.out.println("Ew no");
+                this.poison.get(i).setLocation(getRandomGridPoint());
+            }
+        }
+    }
+
+    private Point getRandomGridPoint() {
+        return new Point((int) (Math.random() * this.grid.getColumns()), (int) (Math.random() * this.grid.getRows()));
     }
 
     @Override
@@ -75,16 +126,12 @@ class SnakeEnvironment extends Environment {
         //       }
         else if (e.getKeyCode() == KeyEvent.VK_UP) {
             this.snake.setDirection(Direction.UP);
-            snake.move();
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             this.snake.setDirection(Direction.DOWN);
-            snake.move();
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             this.snake.setDirection(Direction.RIGHT);
-            snake.move();
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             this.snake.setDirection(Direction.LEFT);
-            snake.move();
         } else if (e.getKeyCode() == KeyEvent.VK_G) {
             snake.setGrowthCounter(1);
         }
@@ -103,24 +150,44 @@ class SnakeEnvironment extends Environment {
         if (this.grid != null) {
             this.grid.paintComponent(graphics);
 
+            //apples
+            if (this.apples != null) {
+                for (int i = 0; i < this.apples.size(); i++) {
+                    this.apples.get(i);
+                    GraphicsPalette.drawApple(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize());
+                }
+                //poison
+                if (this.poison != null) {
+                    for (int i = 0; i < this.poison.size(); i++) {
+                        this.poison.get(i);
+                        GraphicsPalette.drawPoisonBottle(graphics, this.grid.getCellPosition(this.poison.get(i)), this.grid.getCellSize(), Color.BLACK);
+
+                    }
+
+                }
+
+
+            }
             //snake
             Point cellLocation;
             graphics.setColor(Color.WHITE);
             if (snake != null) {
                 for (int i = 0; i < snake.getBody().size(); i++) {
-                    if (i == 0){
+                    if (i == 0) {
                         graphics.setColor(Color.red);
                     } else {
                         graphics.setColor(Color.WHITE);
                     }
-                    
+
                     cellLocation = grid.getCellPosition(snake.getBody().get(i));
                     graphics.fillOval(cellLocation.x, cellLocation.y, grid.getCellWidth(), grid.getCellHeight());
                 }
             }
         }
+        graphics.setColor(new Color(255, 215, 0));
         graphics.setFont(new Font("Calibri", Font.BOLD, 30));
         graphics.drawString("Score: " + this.score, 50, 50);
 
+        graphics.drawImage(blackout, 200, 300, 50, 50, this);
     }
 }

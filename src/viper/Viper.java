@@ -23,6 +23,6 @@ public class Viper {
 
     private static void start() {
         ApplicationStarter.run("Viper Runner", new SnakeEnvironment());
-
+        
     }
 }
