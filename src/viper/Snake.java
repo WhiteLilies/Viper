@@ -12,52 +12,52 @@ import java.util.ArrayList;
  * @author kimberlygilson
  */
 public class Snake {
+
     private ArrayList<Point> body;
     private Direction direction = Direction.RIGHT;
     private int growthCounter = 0;
-    
+
     {
         body = new ArrayList<>();
     }
 
-    public void move(){
+    public void move() {
         //create a new location for the head, using the direction
         int x = 0;
         int y = 0;
-        switch (getDirection()){
+        switch (getDirection()) {
             case UP:
                 x = 0;
                 y = -1;
-                break;    
-                
+                break;
+
             case DOWN:
                 x = 0;
                 y = 1;
-                break;      
+                break;
             case RIGHT:
                 x = 1;
                 y = 0;
-                break;      
+                break;
             case LEFT:
                 x = -1;
-                y = 0;      
+                y = 0;
 
         }
-        
-        body.add(0, new Point(getHead().x + x,getHead().y + y));
+
+        body.add(0, new Point(getHead().x + x, getHead().y + y));
         //deleting the tail
-        if (growthCounter > 0){
+        if (growthCounter > 0) {
             growthCounter--;
         } else {
-            body.remove(body.size() -1);
+            body.remove(body.size() - 1);
         }
-        
     }
-    
-    public Point getHead(){
+
+    public Point getHead() {
         return body.get(0);
     }
-            
+
     /**
      * @return the body
      */
@@ -99,8 +99,8 @@ public class Snake {
     public void setGrowthCounter(int growthCounter) {
         this.growthCounter = growthCounter;
     }
+
     public void grow(int growth) {
         this.growthCounter += growth;
     }
-
 }
