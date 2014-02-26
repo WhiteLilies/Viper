@@ -58,12 +58,12 @@ class SnakeEnvironment extends Environment {
         //   godlenSnitches.add(getRandomGridLocation());
         //apples that are not apples
         this.apples = new ArrayList<Point>();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 1; i++) {
             this.apples.add(getRandomGridPoint());
         }
         //poison bottles
         this.poison = new ArrayList<Point>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             this.poison.add(getRandomGridPoint());
         }
 
