@@ -41,7 +41,7 @@ class SnakeEnvironment extends Environment {
     @Override
     public void initializeEnvironment() {
         this.setBackground(ResourceTools.loadImageFromResource("resources/brick_block.png"));
-        
+
         this.yoshiEgg = (ResourceTools.loadImageFromResource("resources/yoshi_egg.png"));
         this.yoshi = (ResourceTools.loadImageFromResource("resources/yoshi.png"));
 
@@ -61,9 +61,10 @@ class SnakeEnvironment extends Environment {
         for (int i = 0; i < 1; i++) {
             this.apples.add(getRandomGridPoint());
         }
+
         //poison bottles
         this.poison = new ArrayList<Point>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 1; i++) {
             this.poison.add(getRandomGridPoint());
         }
 
@@ -82,19 +83,24 @@ class SnakeEnvironment extends Environment {
         //    System.out.println("Timer");
         //.move is a method
         if (this.gameState == GameState.RUNNING) {
-         
-        if (snake != null) {
-            if (moveCounter <= 0) {
-                snake.move();
-                moveCounter = delay;
-                checkAppleSnakeIntersect();
-                checkPoisonSnakeIntersect();
-            } else {
-                moveCounter--;
-            }
 
+            if (snake != null) {
+                if (moveCounter <= 0) {
+                    snake.move();
+                    moveCounter = delay;
+                    checkAppleSnakeIntersect();
+                    checkPoisonSnakeIntersect();
+                    checkOutsideGrid();
+                } else {
+                    moveCounter--;
+                }
+
+            }
         }
-        }
+    }
+
+    private void checkApplePoisonIntersect() {
+        //if the apples and poison occupy the same grid point, move the apple
     }
 
     private void checkAppleSnakeIntersect() {
@@ -106,9 +112,12 @@ class SnakeEnvironment extends Environment {
             if (this.apples.get(i).equals(this.snake.getHead())) {
                 System.out.println("CHooommmmppppp!!!!!!!!!!!!!");
 //                this.apples.get(i).x = (int) (Math.random() * this.grid.getColumns());
-                this.apples.get(i).setLocation(getRandomGridPoint());
                 this.score += 50;
+                this.apples.get(i).setLocation(getRandomGridPoint());
                 this.snake.grow(1);
+                this.poison.add(getRandomGridPoint());
+//                this.poison.get(i).setLocation(getRandomGridPoint());
+
             }
         }
     }
@@ -120,6 +129,16 @@ class SnakeEnvironment extends Environment {
                 this.poison.get(i).setLocation(getRandomGridPoint());
                 gameState = GameState.FINISHED;
             }
+
+        }
+    }
+
+    private void checkOutsideGrid() {
+        if ((snake.getHead().x < 0)
+                || (snake.getHead().x >= this.grid.getColumns())
+                || (snake.getHead().y < 0)
+                || (snake.getHead().y >= this.grid.getRows())) {
+            gameState = GameState.FINISHED;
         }
     }
 
@@ -134,28 +153,35 @@ class SnakeEnvironment extends Environment {
 //        }
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             if (gameState == GameState.RUNNING) {
-                gameState = GameState.PAUSED;    
+                gameState = GameState.PAUSED;
             } else if (gameState == GameState.PAUSED) {
                 gameState = GameState.RUNNING;
             }
-                }
-        //       else if (e.getKeyCode() == KeyEvent.VK_M){
+        } //       else if (e.getKeyCode() == KeyEvent.VK_M){
         //           snake.move();
         //       }
         else if (e.getKeyCode() == KeyEvent.VK_UP) {
-            this.snake.setDirection(Direction.UP);
+            if (snake.getDirection() != Direction.DOWN) {
+                this.snake.setDirection(Direction.UP);
+            }
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            this.snake.setDirection(Direction.DOWN);
+            if (snake.getDirection() != Direction.UP) {
+                this.snake.setDirection(Direction.DOWN);
+            }
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            this.snake.setDirection(Direction.RIGHT);
+            if (snake.getDirection() != Direction.LEFT) {
+                this.snake.setDirection(Direction.RIGHT);
+            }
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            this.snake.setDirection(Direction.LEFT);
+            if (snake.getDirection() != Direction.RIGHT) {
+                this.snake.setDirection(Direction.LEFT);
+            }
         } else if (e.getKeyCode() == KeyEvent.VK_G) {
             snake.setGrowthCounter(1);
         } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            gameState = GameState.FINISHED;     
+            gameState = GameState.FINISHED;
         }
-       
+
     }
 
     @Override
@@ -196,12 +222,12 @@ class SnakeEnvironment extends Environment {
                 for (int i = 0; i < snake.getBody().size(); i++) {
                     if (i == 0) {
                         graphics.setColor(Color.red);
-                        cellLocation= grid.getCellPosition(snake.getBody().get(i));
-                        graphics.drawImage(yoshi, cellLocation.x, cellLocation.y, grid.getCellWidth(),grid.getCellHeight() , this);
+                        cellLocation = grid.getCellPosition(snake.getBody().get(i));
+                        graphics.drawImage(yoshi, cellLocation.x, cellLocation.y, grid.getCellWidth(), grid.getCellHeight(), this);
                     } else {
                         graphics.setColor(Color.WHITE);
                         cellLocation = grid.getCellPosition(snake.getBody().get(i));
-                        graphics.drawImage(yoshiEgg,cellLocation.x, cellLocation.y, grid.getCellWidth(), grid.getCellHeight(), this);
+                        graphics.drawImage(yoshiEgg, cellLocation.x, cellLocation.y, grid.getCellWidth(), grid.getCellHeight(), this);
 
                     }
 
@@ -210,24 +236,24 @@ class SnakeEnvironment extends Environment {
                 }
             }
         }
-        
-        if (gameState == GameState.RUNNING) {
-        graphics.setColor(new Color(255, 215, 0));
-        graphics.setFont(new Font("Calibri", Font.BOLD, 30));
-        graphics.drawString("Score: " + this.score, 50, 50);
-        }
-        
 
-   //     graphics.drawImage(blackout, 200, 300, 50, 50, this);
-        
+        if (gameState == GameState.RUNNING) {
+            graphics.setColor(new Color(255, 215, 0));
+            graphics.setFont(new Font("Calibri", Font.BOLD, 30));
+            graphics.drawString("Score: " + this.score, 50, 50);
+        }
+
+
+        //     graphics.drawImage(blackout, 200, 300, 50, 50, this);
+
         if (gameState == GameState.FINISHED) {
-        this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
-        graphics.setColor(new Color(255, 0, 0));
-        graphics.setFont(new Font("Calibri", Font.BOLD, 150));
-        graphics.drawString("Dead", 260, 150);
-        graphics.setColor(new Color(255, 215, 0));
-        graphics.setFont(new Font("Calibri", Font.BOLD, 110));
-        graphics.drawString("Score: " + this.score, 240, 250);
+            this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
+            graphics.setColor(new Color(255, 0, 0));
+            graphics.setFont(new Font("Calibri", Font.BOLD, 150));
+            graphics.drawString("Dead", 260, 150);
+            graphics.setColor(new Color(255, 215, 0));
+            graphics.setFont(new Font("Calibri", Font.BOLD, 110));
+            graphics.drawString("Score: " + this.score, 240, 250);
         }
     }
 }
