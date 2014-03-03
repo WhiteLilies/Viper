@@ -29,10 +29,11 @@ class SnakeEnvironment extends Environment {
     private Snake snake;
     private ArrayList<Point> apples;
     private ArrayList<Point> poison;
-    private int delay = 2;
+    private int delay = 1;
     private int moveCounter = delay;
     private Image yoshiEgg;
     private Image yoshi;
+//    private Image stary;
     //private ArrayList<Point> goldenSnitches;
 
     public SnakeEnvironment() {
@@ -40,8 +41,9 @@ class SnakeEnvironment extends Environment {
 
     @Override
     public void initializeEnvironment() {
-        this.setBackground(ResourceTools.loadImageFromResource("resources/brick_block.png"));
-
+        this.setBackground(ResourceTools.loadImageFromResource("resources/newbluebg.jpg"));
+        
+//        this.stary = (ResourceTools.loadImageFromResource("resources/mario_star.jpg"));
         this.yoshiEgg = (ResourceTools.loadImageFromResource("resources/yoshi_egg.png"));
         this.yoshi = (ResourceTools.loadImageFromResource("resources/yoshi.png"));
 
@@ -59,22 +61,23 @@ class SnakeEnvironment extends Environment {
         //apples that are not apples
         this.apples = new ArrayList<Point>();
         for (int i = 0; i < 1; i++) {
-            this.apples.add(getRandomGridPoint());
+            this.apples.add(getRandomGridLocation());
         }
 
         //poison bottles
         this.poison = new ArrayList<Point>();
         for (int i = 0; i < 1; i++) {
-            this.poison.add(getRandomGridPoint());
+            this.poison.add(getRandomGridLocation());
         }
 
         //snake
         this.snake = new Snake();
         this.snake.getBody().add(new Point(5, 5));
-        this.snake.getBody().add(new Point(5, 4));
-        this.snake.getBody().add(new Point(5, 3));
-        this.snake.getBody().add(new Point(4, 3));
-
+//        this.snake.getBody().add(new Point(5, 4));
+//        this.snake.getBody().add(new Point(5, 3));
+//        this.snake.getBody().add(new Point(4, 3));
+        this.snake.grow(4);
+        
     }
 
     @Override
@@ -91,6 +94,7 @@ class SnakeEnvironment extends Environment {
                     checkAppleSnakeIntersect();
                     checkPoisonSnakeIntersect();
                     checkOutsideGrid();
+                    checkSnakeSelfIntersect();
                 } else {
                     moveCounter--;
                 }
@@ -99,9 +103,6 @@ class SnakeEnvironment extends Environment {
         }
     }
 
-    private void checkApplePoisonIntersect() {
-        //if the apples and poison occupy the same grid point, move the apple
-    }
 
     private void checkAppleSnakeIntersect() {
         //if snake.head is in the same grid coordinate as ANY apple, then...
@@ -113,11 +114,10 @@ class SnakeEnvironment extends Environment {
                 System.out.println("CHooommmmppppp!!!!!!!!!!!!!");
 //                this.apples.get(i).x = (int) (Math.random() * this.grid.getColumns());
                 this.score += 50;
-                this.apples.get(i).setLocation(getRandomGridPoint());
                 this.snake.grow(1);
-                this.poison.add(getRandomGridPoint());
-//                this.poison.get(i).setLocation(getRandomGridPoint());
-
+                this.poison.add(getRandomGridLocation());
+//                this.poison.get(i).setLocation(getRandomGridLocation());
+                this.apples.get(i).setLocation(getRandomGridLocation());
             }
         }
     }
@@ -126,10 +126,17 @@ class SnakeEnvironment extends Environment {
         for (int i = 0; i < this.poison.size(); i++) {
             if (this.poison.get(i).equals((this.snake.getHead()))) {
                 System.out.println("Ew no");
-                this.poison.get(i).setLocation(getRandomGridPoint());
+                this.poison.get(i).setLocation(getRandomGridLocation());
                 gameState = GameState.FINISHED;
             }
 
+        }
+    }
+
+    private void checkSnakeSelfIntersect() {
+        if (this.snake.selfHit()) {
+            gameState = GameState.FINISHED;
+            System.out.println("oooooooouch!");
         }
     }
 
@@ -142,8 +149,36 @@ class SnakeEnvironment extends Environment {
         }
     }
 
-    private Point getRandomGridPoint() {
-        return new Point((int) (Math.random() * this.grid.getColumns()), (int) (Math.random() * this.grid.getRows()));
+        public Point getRandomGridLocation() {
+        //generate a new random point in the grid
+        int x = (int) (Math.random() * grid.getColumns());
+        int y = (int) (Math.random() * grid.getRows());
+
+        Point randomPoint = new Point(x, y);
+        
+        
+        //check the point, if the position is occupied, move it 
+        //across the grid until you find an open point.
+        for (int row = 0; row < grid.getRows(); row++) {
+            for (int column = 0; column < grid.getColumns(); column++) {
+                randomPoint.setLocation((x + row) % grid.getColumns(), (y + column) % grid.getRows());
+                
+                if (!locationOccupied(randomPoint)) {
+                    return randomPoint;
+                }
+            }
+        }
+        return randomPoint;
+    }
+    
+    private boolean locationOccupied(Point location){
+        return apples.contains(location);
+
+//        if you have many ArrayLists with different objects, you will need to 
+//        check all of them with a statement as follows (assume we have "apples"
+//        and "lollipops" and "bombs":
+        
+//        return (apples.contains(location) || lollipops.contains(location) || bombs.contains(location));
     }
 
     @Override
@@ -201,7 +236,9 @@ class SnakeEnvironment extends Environment {
             if (this.apples != null) {
                 for (int i = 0; i < this.apples.size(); i++) {
                     this.apples.get(i);
-                    GraphicsPalette.drawApple(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize());
+                    
+                    GraphicsPalette.drawSixPointStar(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize(), Color.yellow);
+//                    GraphicsPalette.drawApple(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize());
                 }
                 //poison
                 if (this.poison != null) {
@@ -238,22 +275,32 @@ class SnakeEnvironment extends Environment {
         }
 
         if (gameState == GameState.RUNNING) {
+            this.setBackground(ResourceTools.loadImageFromResource("resources/newbluebg.jpg"));
             graphics.setColor(new Color(255, 215, 0));
             graphics.setFont(new Font("Calibri", Font.BOLD, 30));
             graphics.drawString("Score: " + this.score, 50, 50);
         }
 
-
+//        if (gameState == GameState.PAUSED) {
+//        }
         //     graphics.drawImage(blackout, 200, 300, 50, 50, this);
 
         if (gameState == GameState.FINISHED) {
             this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
-            graphics.setColor(new Color(255, 0, 0));
+            graphics.setColor(new Color(255, 255, 255));
             graphics.setFont(new Font("Calibri", Font.BOLD, 150));
-            graphics.drawString("Dead", 260, 150);
+            graphics.drawString("Game Over", 95, 180);
             graphics.setColor(new Color(255, 215, 0));
             graphics.setFont(new Font("Calibri", Font.BOLD, 110));
-            graphics.drawString("Score: " + this.score, 240, 250);
+            graphics.drawString("Score: " + this.score, 240, 300);
         }
+        
+        if (gameState == GameState.PAUSED) {
+            this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
+            graphics.drawImage(yoshi, 0,0, this);
+            graphics.setFont(new Font("Calibri", Font.BOLD, 40));
+            graphics.drawString("Press the 'spacebar' to begin.", 350, 350);
+        }
+        
     }
 }

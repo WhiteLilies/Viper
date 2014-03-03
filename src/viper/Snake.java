@@ -53,6 +53,16 @@ public class Snake {
             body.remove(body.size() - 1);
         }
     }
+    
+    public boolean selfHit(){
+        for (int bodyPart = 1; bodyPart < body.size(); bodyPart++) {
+            if (getHead().equals(body.get(bodyPart))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 
     public Point getHead() {
         return body.get(0);
