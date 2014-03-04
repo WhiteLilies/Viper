@@ -29,10 +29,11 @@ class SnakeEnvironment extends Environment {
     private Snake snake;
     private ArrayList<Point> apples;
     private ArrayList<Point> poison;
-    private int delay = 1;
+    private int delay = 2;
     private int moveCounter = delay;
     private Image yoshiEgg;
     private Image yoshi;
+    private Image bkg;
 //    private Image stary;
     //private ArrayList<Point> goldenSnitches;
 
@@ -42,11 +43,11 @@ class SnakeEnvironment extends Environment {
     @Override
     public void initializeEnvironment() {
         this.setBackground(ResourceTools.loadImageFromResource("resources/newbluebg.jpg"));
-        
+
 //        this.stary = (ResourceTools.loadImageFromResource("resources/mario_star.jpg"));
         this.yoshiEgg = (ResourceTools.loadImageFromResource("resources/yoshi_egg.png"));
         this.yoshi = (ResourceTools.loadImageFromResource("resources/yoshi.png"));
-
+        this.bkg = (ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
         //grid  
         this.grid = new Grid();
         this.grid.setPosition(new Point(50, 100));
@@ -77,7 +78,7 @@ class SnakeEnvironment extends Environment {
 //        this.snake.getBody().add(new Point(5, 3));
 //        this.snake.getBody().add(new Point(4, 3));
         this.snake.grow(4);
-        
+
     }
 
     @Override
@@ -103,7 +104,6 @@ class SnakeEnvironment extends Environment {
         }
     }
 
-
     private void checkAppleSnakeIntersect() {
         //if snake.head is in the same grid coordinate as ANY apple, then...
         // move apple
@@ -118,6 +118,7 @@ class SnakeEnvironment extends Environment {
                 this.poison.add(getRandomGridLocation());
 //                this.poison.get(i).setLocation(getRandomGridLocation());
                 this.apples.get(i).setLocation(getRandomGridLocation());
+
             }
         }
     }
@@ -149,20 +150,20 @@ class SnakeEnvironment extends Environment {
         }
     }
 
-        public Point getRandomGridLocation() {
+    public Point getRandomGridLocation() {
         //generate a new random point in the grid
         int x = (int) (Math.random() * grid.getColumns());
         int y = (int) (Math.random() * grid.getRows());
 
         Point randomPoint = new Point(x, y);
-        
-        
+
+
         //check the point, if the position is occupied, move it 
         //across the grid until you find an open point.
         for (int row = 0; row < grid.getRows(); row++) {
             for (int column = 0; column < grid.getColumns(); column++) {
                 randomPoint.setLocation((x + row) % grid.getColumns(), (y + column) % grid.getRows());
-                
+
                 if (!locationOccupied(randomPoint)) {
                     return randomPoint;
                 }
@@ -170,14 +171,14 @@ class SnakeEnvironment extends Environment {
         }
         return randomPoint;
     }
-    
-    private boolean locationOccupied(Point location){
+
+    private boolean locationOccupied(Point location) {
         return apples.contains(location);
 
 //        if you have many ArrayLists with different objects, you will need to 
 //        check all of them with a statement as follows (assume we have "apples"
 //        and "lollipops" and "bombs":
-        
+
 //        return (apples.contains(location) || lollipops.contains(location) || bombs.contains(location));
     }
 
@@ -192,7 +193,26 @@ class SnakeEnvironment extends Environment {
             } else if (gameState == GameState.PAUSED) {
                 gameState = GameState.RUNNING;
             }
-        } //       else if (e.getKeyCode() == KeyEvent.VK_M){
+
+        }
+        if (e.getKeyCode() == KeyEvent.VK_B) {
+            if (gameState == GameState.RUNNING) {
+            this.setBackground(ResourceTools.loadImageFromResource("resources/brick.jpg"));
+ 
+            }
+        }
+        
+        //replay
+//        if (e.getKeyCode() == KeyEvent.VK_P) {
+//            if (gameState == GameState.FINISHED) {
+//                gameState = GameState.PAUSED;
+//                this.score = 0;
+//                this.snake.getBody().remove(this.snake.getBody().size());
+//
+//
+//            }
+//
+//        } //       else if (e.getKeyCode() == KeyEvent.VK_M){
         //           snake.move();
         //       }
         else if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -232,12 +252,13 @@ class SnakeEnvironment extends Environment {
         if (this.grid != null) {
             this.grid.paintComponent(graphics);
 
+
             //apples that are not apples
             if (this.apples != null) {
                 for (int i = 0; i < this.apples.size(); i++) {
                     this.apples.get(i);
-                    
-                    GraphicsPalette.drawSixPointStar(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize(), Color.yellow);
+
+                    GraphicsPalette.drawSixPointStar(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize(), Color.GREEN);
 //                    GraphicsPalette.drawApple(graphics, this.grid.getCellPosition(this.apples.get(i)), this.grid.getCellSize());
                 }
                 //poison
@@ -279,11 +300,15 @@ class SnakeEnvironment extends Environment {
             graphics.setColor(new Color(255, 215, 0));
             graphics.setFont(new Font("Calibri", Font.BOLD, 30));
             graphics.drawString("Score: " + this.score, 50, 50);
+            graphics.fillRect(45, 95, 810, 5);
+            graphics.fillRect(852, 95, 5, 410);
+            graphics.fillRect(45, 501, 810, 5);
+            graphics.fillRect(45, 95, 5, 410);
+
+
         }
 
-//        if (gameState == GameState.PAUSED) {
-//        }
-        //     graphics.drawImage(blackout, 200, 300, 50, 50, this);
+
 
         if (gameState == GameState.FINISHED) {
             this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
@@ -294,13 +319,15 @@ class SnakeEnvironment extends Environment {
             graphics.setFont(new Font("Calibri", Font.BOLD, 110));
             graphics.drawString("Score: " + this.score, 240, 300);
         }
-        
+
         if (gameState == GameState.PAUSED) {
             this.setBackground(ResourceTools.loadImageFromResource("resources/black_bkg.jpg"));
-            graphics.drawImage(yoshi, 0,0, this);
+            graphics.drawImage(bkg, 0, 0, this);
+            graphics.drawImage(yoshi, WIDTH, delay, this);
+            graphics.setColor(new Color(255, 255, 255));
             graphics.setFont(new Font("Calibri", Font.BOLD, 40));
             graphics.drawString("Press the 'spacebar' to begin.", 350, 350);
         }
-        
+
     }
 }
