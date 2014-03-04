@@ -29,7 +29,7 @@ class SnakeEnvironment extends Environment {
     private Snake snake;
     private ArrayList<Point> apples;
     private ArrayList<Point> poison;
-    private int delay = 2;
+    private int delay = 1;
     private int moveCounter = delay;
     private Image yoshiEgg;
     private Image yoshi;
